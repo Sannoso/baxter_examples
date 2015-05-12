@@ -55,12 +55,13 @@ def main():
 	ikrequestmessage = SolvePositionIKRequest()
 	#I'm making the header in a different function to ensure a correct timestamp
 	#so I should move underlieing line into the function using it:
-	now = rospy.Time.now()
+#	now = rospy.Time.now()
+	now = rospy.get_time()
 	print('now is: ',now)
 	print(now)
 
-	while(now == 0):
-		now = rospy.get_rostime()
+	while(now == 0.0):
+		now = rospy.get_time()
 		print(now)
 
        	hdr = Header(stamp=now, frame_id='base')    
