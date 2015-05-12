@@ -38,7 +38,7 @@ def main():
 	"""
 	Sanders IK test
 
-	Uses 
+	Uses blabla
 	"""
 	
 	#create and initialise a rosnode	
@@ -54,13 +54,23 @@ def main():
 	ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
 	ikrequestmessage = SolvePositionIKRequest()
 	#I'm making the header in a different function to ensure a correct timestamp
-	#so I should move underlieing line:
-       	header = Header(stamp=rospy.Time.now(), frame_id='base')    
-		
-	print(servicename)
-	print(header)
-#	print(stamp)
-	print(rospy.Time.now())
+	#so I should move underlieing line into the function using it:
+	now = rospy.Time.now()
+	print('now is: ',now)
+	print(now)
+
+	while(now == 0):
+		now = rospy.get_rostime()
+		print(now)
+
+       	hdr = Header(stamp=now, frame_id='base')    
+	print(hdr)
+
+	count = 0
+	while(count < 9):
+		print('The count is: ', count)
+		count = count + 1
+
 #	time.sleep(5) #sleep 5 seconds to check rosnode list if node is executed
 	return "\n IK test executed succesfully"
 
