@@ -10,6 +10,9 @@ import struct
 import sys
 import rospy
 
+#import library to use time.sleep function
+import time
+
 #import necessary rosmessage parts
 from geometry_msgs.msg import (
     PoseStamped,
@@ -20,11 +23,15 @@ from geometry_msgs.msg import (
 from std_msgs.msg import Header
 
 #import necessary service messagestuff
+#to build the request message for the IK service
 from baxter_core_msgs.srv import (
     SolvePositionIK,
     SolvePositionIKRequest,
 )
 
+
+#def ik_test(beginpose, endpose):
+	
 
 def main():
 	"""
@@ -32,9 +39,10 @@ def main():
 
 	Uses 
 	"""
-
-	print "\n 42.43 seconds \n"
-	return 0
+	
+	rospy.init_node("Sander_ik_test_node")
+	time.sleep(5)
+	return "\n IK test executed succesfully"
 
 if __name__ == '__main__':
     sys.exit(main())
