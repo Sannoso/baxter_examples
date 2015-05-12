@@ -26,3 +26,18 @@ from baxter_core_msgs.srv import (
 )
 
 
+def main():
+	"""
+	Sanders IK test
+
+	Uses 
+	"""
+
+	print "\n 42.43 seconds \n"
+	return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
+
+
+
