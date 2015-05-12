@@ -55,22 +55,12 @@ def main():
 	ikrequestmessage = SolvePositionIKRequest()
 	#I'm making the header in a different function to ensure a correct timestamp
 	#so I should move underlieing line into the function using it:
-#	now = rospy.Time.now()
-	now = rospy.get_time()
-	print('now is: ',now)
-	print(now)
-
-	while(now == 0.0):
-		now = rospy.get_time()
-		print(now)
+	now = rospy.Time.now()
+	while(now.secs == 0):
+		now = rospy.Time.now()
 
        	hdr = Header(stamp=now, frame_id='base')    
 	print(hdr)
-
-	count = 0
-	while(count < 9):
-		print('The count is: ', count)
-		count = count + 1
 
 #	time.sleep(5) #sleep 5 seconds to check rosnode list if node is executed
 	return "\n IK test executed succesfully"
