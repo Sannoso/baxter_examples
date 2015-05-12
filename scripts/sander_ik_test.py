@@ -31,8 +31,42 @@ from baxter_core_msgs.srv import (
 
 
 #def ik_test(beginpose, endpose):
-#every request should have the correct timestamp:
-#	header = Header(stamp=rospy.Time.now(), frame_id='base')	
+def ik_test():
+       rospy.init_node("Sander_ik_test_node")
+ 
+       ##preparing to call the IK service
+       #store the name of the service in a variable for easier use
+       servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
+       #wait for the service to be available. startup_time or in use by something else
+#      rospy.wait_for_service(servicename)#what is the name of IKService? does this work?
+       #create a rospy.serviceproxy to be able to call this service
+       ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
+       ikrequestmessage = SolvePositionIKRequest()
+       print('ikrequestemessage is: ', ikrequestmessage)
+       print(ikrequestmessage)
+	#every request should have the correct timestamp:
+        #I'm making the header in a different function to ensure a correct timestamp
+                #the while loop is necessary because in simulator time rospy.time.now has
+                #to be called in a short timespace after timepublication on /clock
+        now = rospy.Time.now()
+        count = 0
+        while(now.secs == 0):
+                now = rospy.Time.now()
+                count += 1
+        print('amount of rospy.Time.now() requests until non-zero output: ', count)
+
+        hdr = Header(stamp=now, frame_id='base')
+        print(hdr)
+	#oke the header is created
+
+	
+	#declaring all poses:
+#	poses = {
+	#continue with adding the endPose!
+
+
+	return 1
+
 
 def main():
 	"""
@@ -42,27 +76,9 @@ def main():
 	"""
 	
 	#create and initialise a rosnode	
-	rospy.init_node("Sander_ik_test_node")
-	
-	##preparing to call the IK service
-	
-	#store the name of the service in a variable for easier use
-	servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
-	#wait for the service to be available. startup_time or in use by something else
-#	rospy.wait_for_service(servicename)#what is the name of IKService? does this work?
-	#create a rospy.serviceproxy to be able to call this service
-	ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
-	ikrequestmessage = SolvePositionIKRequest()
-	#I'm making the header in a different function to ensure a correct timestamp
-	#so I should move underlieing line into the function using it:
-	now = rospy.Time.now()
-	while(now.secs == 0):
-		now = rospy.Time.now()
-
-       	hdr = Header(stamp=now, frame_id='base')    
-	print(hdr)
-
-#	time.sleep(5) #sleep 5 seconds to check rosnode list if node is executed
+#	rospy.init_node("Sander_ik_test_node")
+	#call the testroutine	
+	ik_test()
 	return "\n IK test executed succesfully"
 
 if __name__ == '__main__':
