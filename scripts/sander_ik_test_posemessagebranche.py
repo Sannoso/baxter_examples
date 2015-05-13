@@ -34,39 +34,103 @@ from baxter_core_msgs.srv import (
 
 #def ik_test(beginpose, endpose):
 def ik_test():
-       rospy.init_node("Sander_ik_test_node")
+	rospy.init_node("Sander_ik_test_node")
  
        ##preparing to call the IK service
        #store the name of the service in a variable for easier use
-       servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
+       	servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
        #wait for the service to be available. startup_time or in use by something else
 #      rospy.wait_for_service(servicename)#what is the name of IKService? does this work?
        #create a rospy.serviceproxy to be able to call this service
-       ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
-       ikrequestmessage = SolvePositionIKRequest()
-       print('ikrequestemessage is: ', ikrequestmessage)
-       print(ikrequestmessage)
+       	ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
+       	ikrequestmessage = SolvePositionIKRequest()
+       	print('ikrequestemessage is: ', ikrequestmessage)
+#       print(ikrequestmessage)
 	#every request should have the correct timestamp:
         #I'm making the header in a different function to ensure a correct timestamp
                 #the while loop is necessary because in simulator time rospy.time.now has
                 #to be called in a short timespace after timepublication on /clock
-        now = rospy.Time.now()
-        count = 0
-        while(now.secs == 0):
-                now = rospy.Time.now()
-                count += 1
-        print('amount of rospy.Time.now() requests until non-zero output: ', count)
+	now = rospy.Time.now()
+#        count = 0
+#        while(now.secs == 0):
+#                now = rospy.Time.now()
+#                count += 1
+#        print('amount of rospy.Time.now() requests until non-zero output: ', count)
 
         hdr = Header(stamp=now, frame_id='base')
         print(hdr)
 	#oke the header is created
 
+	#declaring all poses	
+	poses = {
+	'ik_example_pose': PoseStamped(
+            header=hdr,
+            pose=Pose(
+                position=Point(
+                    x=0.656982770038,
+                    y=-0.852598021641,
+                    z=0.0388609422173,
+                ),
+                orientation=Quaternion(
+                    x=0.367048116303,
+                    y=0.885911751787,
+                    z=-0.108908281936,
+                    w=0.261868353356,
+                ),
+            ),
+        ),
+        'neutralpose': PoseStamped(
+        	header=hdr,
+            	pose=Pose(
+                	position=Point(
+                    		x=0.573,
+                    		y=-0.181,
+                    		z=0.246,
+                	),
+               		orientation=Quaternion(
+               		    x=-0.141,
+        		    y=0.990,
+	                    z=-0.012,
+	                    w=0.026,
+                	),
+		),
+        ),
+        'poseA': PoseStamped(
+            	header=hdr,
+        	pose=Pose(
+      			position=Point(
+              	      		x=0.1,
+	                    	y=0.51,
+		                z=0.723,
+                	),
+                	orientation=Quaternion(
+        	            x=0,
+      		            y=1,
+                	    z=0,
+	                    w=0,
+        	        ),
+            	),
+        ),
+	#'triangledepositpose'
+	#'squaredepositpose'
+	#'circledepositpose'
+    	}
 	
-	#declaring all poses:
-#	poses = {
-	#continue with adding the endPose!
-
-
+	#put PoseStamped[] in the requestmessage
+	ikrequestmessage.pose_stamp.append(poses['ik_example_pose'])
+#	ikrequestmessage.pose_stamp.append(poses['neutralpose'])
+	print(ikrequestmessage)
+	
+	try:
+		rospy.wait_for_service(servicename, 5.0)
+		resp = ikservice(ikrequestmessage)
+	except (rospy.ServiceException, rospy.ROSException), e:
+		rospy.logerr("Service call failed: %s" % (e,))
+		return 1
+	
+        print "------------------"
+        print "Response Message:\n", resp
+	
 	return 1
 
 
