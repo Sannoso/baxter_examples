@@ -17,57 +17,143 @@ import time
 
 #import necessary rosmessage parts
 from geometry_msgs.msg import (
-    PoseStamped,
-    Pose,
-    Point,
-    Quaternion,
+    	PoseStamped,
+    	Pose,
+    	Point,
+    	Quaternion,
 )
 from std_msgs.msg import Header
 
 #import necessary service messagestuff
 #to build the request message for the IK service
 from baxter_core_msgs.srv import (
-    SolvePositionIK,
-    SolvePositionIKRequest,
+    	SolvePositionIK,
+    	SolvePositionIKRequest,
 )
 
 
 #def ik_test(beginpose, endpose):
 def ik_test():
-       rospy.init_node("Sander_ik_test_node")
+	rospy.init_node("Sander_ik_test_node")
  
-       ##preparing to call the IK service
-       #store the name of the service in a variable for easier use
-       servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
-       #wait for the service to be available. startup_time or in use by something else
-#      rospy.wait_for_service(servicename)#what is the name of IKService? does this work?
-       #create a rospy.serviceproxy to be able to call this service
-       ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
-       ikrequestmessage = SolvePositionIKRequest()
-       print('ikrequestemessage is: ', ikrequestmessage)
-       print(ikrequestmessage)
+	##preparing to call the IK service
+	#store the name of the service in a variable for easier use
+	servicename = "ExternalTools/right/PositionKinematicsNode/IKService"
+	#create a rospy.serviceproxy to be able to call this service
+	ikservice = rospy.ServiceProxy(servicename, SolvePositionIK)
+	#create a blank requestmessage
+	ikrequestmessage = SolvePositionIKRequest()
 	#every request should have the correct timestamp:
-        #I'm making the header in a different function to ensure a correct timestamp
                 #the while loop is necessary because in simulator time rospy.time.now has
                 #to be called in a short timespace after timepublication on /clock
-        now = rospy.Time.now()
-        count = 0
-        while(now.secs == 0):
-                now = rospy.Time.now()
-                count += 1
-        print('amount of rospy.Time.now() requests until non-zero output: ', count)
+       	now = rospy.Time.now()
+       	count = 0
+       	while(now.secs == 0):
+             	now = rospy.Time.now()
+               	count += 1
+       	print('amount of rospy.Time.now() requests until non-zero output: ', count)
 
-        hdr = Header(stamp=now, frame_id='base')
-        print(hdr)
+       	hdr = Header(stamp=now, frame_id='base')
+	print(hdr)
 	#oke the header is created
 
-	
 	#declaring all poses:
-#	poses = {
-	#continue with adding the endPose!
+	poses = {
+                'ik_example_pose': PoseStamped(
+ 	               header=hdr,
+        	        pose=Pose(
+                	        position=Point(
+                        	        x=0.656982770038,
+                                	y=-0.852598021641,
+                                	z=0.0388609422173,
+                        	),
+                        	orientation=Quaternion(
+                                	x=0.367048116303,
+                                	y=0.885911751787,
+                                	z=-0.108908281936,
+                                	w=0.261868353356,
+                        	),
+                    	),
+          	),
+                'neutralpose': PoseStamped(
+	                header=hdr,
+	                pose=Pose(
+	                        position=Point(
+	                                x=0.573,
+	                       		y=-0.181,
+	                            	z=0.246,
+	                        ),
+	                        orientation=Quaternion(
+	                            	x=-0.141,
+	                            	y=0.990,
+	                            	z=-0.012,
+	                            	w=0.026,
+	                        ),
+	                ),
+	  	),
+	        'poseA': PoseStamped(
+	                header=hdr,
+       	        	pose=Pose(
+	                        position=Point(
+	                                x=0.1,
+	                                y=0.51,
+	                                z=0.723,
+	                        ),
+	                        orientation=Quaternion(
+	                            	x=0,
+	                            	y=1,
+	                       		z=0,
+	                            	w=0,
+	                        ),              
+			),
+        	),
+        #'triangledepositpose'
+        #'squaredepositpose'
+        #'circledepositpose'
+        }
+#	ikrequestmessage.pose_stamp.append(poses['poseA'])
+	ikrequestmessage.pose_stamp.append(poses['ik_example_pose'])
+#	print(ikrequestmessage)
+	print(ikrequestmessage)
+
+	#actually call the IK_service for motorpositions on the provided pose
+        try:
+                rospy.wait_for_service(servicename, 5.0)
+                resp = ikservice(ikrequestmessage)
+#                print('resp is')
+#               	print(resp)
+	#when a failure occurs, print the cause
+        except (rospy.ServiceException, rospy.ROSException), e:
+                rospy.logerr("Service call failed: %s" % (e,))
+	        return 1
 
 
-	return 1
+        """
+        revision the rest of this function
+        """
+	# Check if result valid, and type of seed ultimately used to get solution
+    	# convert rospy's string representation of uint8[]'s to int's
+        resp_seeds = struct.unpack('<%dB' % len(resp.result_type),
+                               resp.result_type)
+        if (resp_seeds[0] != resp.RESULT_INVALID):
+                seed_str = {
+                    ikrequestmessage.SEED_USER: 'User Provided Seed',
+                    ikrequestmessage.SEED_CURRENT: 'Current Joint Angles',
+                    ikrequestmessage.SEED_NS_MAP: 'Nullspace Setpoints',
+                   }.get(resp_seeds[0], 'None')
+                print("SUCCESS - Valid Joint Solution Found from Seed Type: %s" %
+                (seed_str,))
+                # Format solution into Limb API-compatible dictionary
+                limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
+                print "\nIK Joint Solution:\n", limb_joints
+                print "------------------"
+                print "Response Message:\n", resp
+        else:
+                print("INVALID POSE - No Valid Joint Solution Found.")
+
+        return 0
+
+
 
 
 def main():
@@ -84,7 +170,7 @@ def main():
 	return "\n IK test executed succesfully"
 
 if __name__ == '__main__':
-    sys.exit(main())
+    	sys.exit(main())
 
 """
 THIS IS THE MESSAGE WE ARE FILLING IN TO DO AN IK REQUEST
