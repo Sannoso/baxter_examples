@@ -38,7 +38,7 @@ def ik_test():
  
        ##preparing to call the IK service
        #store the name of the service in a variable for easier use
-       	servicename = "ExternalTools/right/PositionKinemticsNode/IKService"
+       	servicename = "ExternalTools/right/PositionKinematicsNode/IKService"
        #wait for the service to be available. startup_time or in use by something else
 #      rospy.wait_for_service(servicename)#what is the name of IKService? does this work?
        #create a rospy.serviceproxy to be able to call this service
